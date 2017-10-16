@@ -20,8 +20,12 @@ const findItems = table => query => new Promise((resolve, reject) => {
             if (error) {
                 reject(error)
             } else {
-                reject(results)
+                resolve(results)
             }
         }
     )
 })
+
+module.exports = {
+    findItems
+}
