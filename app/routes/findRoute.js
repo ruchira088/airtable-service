@@ -29,9 +29,9 @@ const createFindRouter = async () =>
                 const stylist = R.head(stylists)
 
                 if (stylists.length > 1) {
-                    response.status(BAD_GATEWAY).json({ stylist })
+                    response.status(BAD_GATEWAY).json(stylist)
                 } else {
-                    response.json({ stylist })
+                    response.json(stylist)
                 }
             }
         } catch (error) {
