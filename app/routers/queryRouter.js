@@ -4,20 +4,22 @@ const R = require("ramda")
 const { INTERNAL_SERVER_ERROR, NOT_FOUND, BAD_GATEWAY } = require("http-status-codes")
 const { getEnvValue } = require("../utils/configUtils")
 const { findItems } = require("../utils/airTableApiUtils")
-const { STYLIST_TABLE_NAME } = require("../config")
+const { STYLIST_TABLE_NAME, QUOTE_TABLE_NAME } = require("../config")
 const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID } = require("../constants/envNames")
 
-const createFindRouter = async () =>
+const createQueryRouter = async () =>
 {
-    const findRouter = express.Router()
+    const queryRouter = express.Router()
 
     const apiKey = await getEnvValue(AIRTABLE_API_KEY)
     const baseId = await getEnvValue(AIRTABLE_BASE_ID)
 
-    const stylistTable = new Airtable({ apiKey }).base(baseId)(STYLIST_TABLE_NAME)
-    const findInStylistTable = findItems(stylistTable)
+    const base = new Airtable({ apiKey }).base(baseId)
 
-    findRouter.post("/", async (request, response) => {
+    const findInStylistTable = findItems(base(STYLIST_TABLE_NAME))
+    const findInQuoteTable = findItems(base(QUOTE_TABLE_NAME))
+
+    queryRouter.post("/stylist", async (request, response) => {
         const { mobileNumber } = request.body
 
         try {
@@ -39,9 +41,17 @@ const createFindRouter = async () =>
         }
     })
 
-    return findRouter
+    queryRouter.get("/:stylist/bookings", async (request, response) => {
+        const { stylist } = request.params
+
+        const bookings = await findInQuoteTable({ Vendor: stylist })
+
+        response.json(bookings)
+    })
+
+    return queryRouter
 }
 
 module.exports = {
-    createFindRouter
+    createQueryRouter
 }
