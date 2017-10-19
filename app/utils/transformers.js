@@ -5,6 +5,8 @@ const airtableBookingTransformer = rawAirtableBooking => ({
     leadStatus: rawAirtableBooking["Lead Status"],
     suburb: rawAirtableBooking.Suburb,
     state: rawAirtableBooking.State,
+    eventDate: rawAirtableBooking["Event Date"],
+    eventTime: rawAirtableBooking["To be ready by"],
     mobileNumber: R.head(rawAirtableBooking.Mobile),
     firstName: R.head(rawAirtableBooking["First Name"]),
     email: rawAirtableBooking["Email (for Zapier)"],
