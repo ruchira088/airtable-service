@@ -4,6 +4,7 @@ const R = require("ramda")
 const { INTERNAL_SERVER_ERROR, NOT_FOUND, BAD_GATEWAY } = require("http-status-codes")
 const { getEnvValue } = require("../utils/configUtils")
 const { findItems } = require("../utils/airTableApiUtils")
+const { airtableBookingTransformer } = require("../utils/transformers")
 const { STYLIST_TABLE_NAME, QUOTE_TABLE_NAME } = require("../config")
 const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID } = require("../constants/envNames")
 
@@ -46,7 +47,9 @@ const createQueryRouter = async () =>
 
         const bookings = await findInQuoteTable({ Vendor: stylist })
 
-        response.json(bookings)
+        const transformedBookings = bookings.map(airtableBookingTransformer)
+
+        response.json(transformedBookings)
     })
 
     return queryRouter
