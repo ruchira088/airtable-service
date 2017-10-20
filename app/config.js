@@ -1,5 +1,6 @@
 module.exports = {
     DEFAULT_HTTP_PORT: 8000,
-    STYLIST_TABLE_NAME: "Stylists",
-    QUOTE_TABLE_NAME: "Quotes"
+    STYLIST_AIRTABLE_NAME: "Stylists",
+    QUOTE_AIRTABLE_NAME: "Quotes",
+    STYLIST_COLLECTION_NAME: "stylists"
 }

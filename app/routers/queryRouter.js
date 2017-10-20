@@ -3,10 +3,11 @@ const Airtable = require("airtable")
 const R = require("ramda")
 const { INTERNAL_SERVER_ERROR, NOT_FOUND, BAD_GATEWAY } = require("http-status-codes")
 const { getEnvValue } = require("../utils/configUtils")
-const { findItems } = require("../utils/airTableApiUtils")
+const { findItems, cacheAirtableItems } = require("../utils/airTableApiUtils")
 const { airtableBookingTransformer } = require("../utils/transformers")
-const { STYLIST_TABLE_NAME, QUOTE_TABLE_NAME } = require("../config")
-const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID } = require("../constants/envNames")
+const { connectToDb, find } = require("../services/databaseService")
+const { STYLIST_AIRTABLE_NAME, QUOTE_AIRTABLE_NAME, STYLIST_COLLECTION_NAME } = require("../config")
+const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID, MONGO_URI } = require("../constants/envNames")
 
 const createQueryRouter = async () =>
 {
@@ -14,17 +15,36 @@ const createQueryRouter = async () =>
 
     const apiKey = await getEnvValue(AIRTABLE_API_KEY)
     const baseId = await getEnvValue(AIRTABLE_BASE_ID)
+    const mongoDbUrl = await getEnvValue(MONGO_URI)
+
+    const db = await connectToDb(mongoDbUrl)
 
     const base = new Airtable({ apiKey }).base(baseId)
+    
+    await cacheAirtableItems(db, base)(STYLIST_COLLECTION_NAME, STYLIST_AIRTABLE_NAME)
 
-    const findInStylistTable = findItems(base(STYLIST_TABLE_NAME))
-    const findInQuoteTable = findItems(base(QUOTE_TABLE_NAME))
+    const findInStylistTable = findItems(base(STYLIST_AIRTABLE_NAME))
+    const findInQuoteTable = findItems(base(QUOTE_AIRTABLE_NAME))
 
     queryRouter.post("/stylist", async (request, response) => {
         const { mobileNumber } = request.body
 
+        const findStylist = async query =>
+        {
+            const cachedStylists = await find(db)(STYLIST_COLLECTION_NAME)(query)
+
+            if (cachedStylists.length === 0) {
+                console.log(`Unable to find cached stylist(s).`)
+                console.log("Querying Airtable...")
+                return findInStylistTable(query)
+            } else {
+                console.log(`${cachedStylists.length} cached stylist(s) found.`)
+                return cachedStylists
+            }
+        }
+
         try {
-            const stylists = await findInStylistTable({ Mobile: mobileNumber })
+            const stylists = await findStylist({ Mobile: mobileNumber })
 
             if (stylists.length === 0) {
                 response.status(NOT_FOUND).json({ error: "Stylist NOT found." })

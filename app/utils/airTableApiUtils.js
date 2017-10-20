@@ -1,3 +1,5 @@
+const { insert, isNonEmpty } = require("../services/databaseService")
+
 const convertToFormula = query => {
     const formula = Object.keys(query)
         .reduce((formula, key) => formula.concat(`${key} = "${query[key]}"`), [])
@@ -9,8 +11,10 @@ const convertToFormula = query => {
 const findItems = table => query => new Promise((resolve, reject) => {
     let results = []
 
+    const parsedQuery = query !== null ? convertToFormula(query) : ""
+
     table.select({
-        filterByFormula: convertToFormula(query)
+        filterByFormula: parsedQuery
     }).eachPage(
         (records, fetchNextPage) => {
             results = results.concat(records.map(({ fields }) => fields))
@@ -26,6 +30,27 @@ const findItems = table => query => new Promise((resolve, reject) => {
     )
 })
 
+const fetchAllItems = table => findItems(table)(null)
+
+const cacheAirtableItems = (db, base) => async (collectionName, airtableName) =>
+{
+    const nonEmpty = await isNonEmpty(db)(collectionName)
+
+    if (nonEmpty) {
+        console.log(`"${collectionName}" collection is NOT empty`)
+        return
+    } else {
+        console.log(`"${collectionName}" collection is empty`)
+
+        console.log("Fetching items from Airtable")
+        const items = await fetchAllItems(base(airtableName))
+        console.log("Successfully fetched items from Airtable")
+
+        return insert(db)(collectionName)(items)
+    }
+}
+
 module.exports = {
-    findItems
+    findItems,
+    cacheAirtableItems
 }
