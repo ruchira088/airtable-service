@@ -1,4 +1,7 @@
+const Airtable = require("airtable")
 const { insert, isNonEmpty } = require("../services/databaseService")
+
+const getAirtableBase = async ({ apiKey, baseId }) => new Airtable({ apiKey }).base(baseId)
 
 const convertToFormula = query => {
     const formula = Object.keys(query)
@@ -32,7 +35,7 @@ const findItems = table => query => new Promise((resolve, reject) => {
 
 const fetchAllItems = table => findItems(table)(null)
 
-const cacheAirtableItems = (db, base) => async (collectionName, airtableName) =>
+const saveAirtableItems = (db, base) => async (collectionName, airtableName) =>
 {
     const nonEmpty = await isNonEmpty(db)(collectionName)
 
@@ -51,6 +54,7 @@ const cacheAirtableItems = (db, base) => async (collectionName, airtableName) =>
 }
 
 module.exports = {
+    getAirtableBase,
     findItems,
-    cacheAirtableItems
+    saveAirtableItems
 }

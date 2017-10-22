@@ -1,9 +1,8 @@
 const express = require("express")
-const Airtable = require("airtable")
 const R = require("ramda")
 const { INTERNAL_SERVER_ERROR, NOT_FOUND, BAD_GATEWAY } = require("http-status-codes")
 const { getEnvValue } = require("../utils/configUtils")
-const { findItems, cacheAirtableItems } = require("../utils/airTableApiUtils")
+const { getAirtableBase, findItems, saveAirtableItems } = require("../services/airtableService")
 const { airtableBookingTransformer } = require("../utils/transformers")
 const { connectToDb, find } = require("../services/databaseService")
 const { STYLIST_AIRTABLE_NAME, QUOTE_AIRTABLE_NAME, STYLIST_COLLECTION_NAME } = require("../config")
@@ -18,10 +17,9 @@ const createQueryRouter = async () =>
     const mongoDbUrl = await getEnvValue(MONGO_URI)
 
     const db = await connectToDb(mongoDbUrl)
-
-    const base = new Airtable({ apiKey }).base(baseId)
+    const base = await getAirtableBase({ apiKey, baseId })
     
-    await cacheAirtableItems(db, base)(STYLIST_COLLECTION_NAME, STYLIST_AIRTABLE_NAME)
+    await saveAirtableItems(db, base)(STYLIST_COLLECTION_NAME, STYLIST_AIRTABLE_NAME)
 
     const findInStylistTable = findItems(base(STYLIST_AIRTABLE_NAME))
     const findInQuoteTable = findItems(base(QUOTE_AIRTABLE_NAME))
