@@ -5,7 +5,7 @@ const getAirtableBase = async ({ apiKey, baseId }) => new Airtable({ apiKey }).b
 
 const convertToFormula = query => {
     const formula = Object.keys(query)
-        .reduce((formula, key) => formula.concat(`${key} = "${query[key]}"`), [])
+        .reduce((formula, key) => formula.concat(`{${key}} = "${query[key]}"`), [])
         .join(", ")
 
     return `AND(${formula})`
