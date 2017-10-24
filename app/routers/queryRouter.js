@@ -60,28 +60,28 @@ const createQueryRouter = async () =>
         }
     })
 
-    queryRouter.get("/:stylist/bookings", async (request, response) => {
+    const queryQuotesTable = response => async (params, transformer) =>
+    {
+        try {
+            const items = await findInQuoteTable(params)
+            const transformedItems = items.map(transformer)
+
+            response.json(transformedItems)
+        } catch (exception) {
+            response.status(INTERNAL_SERVER_ERROR).json(exception)
+        }
+    }
+
+    queryRouter.get("/:stylist/bookings", (request, response) => {
         const { stylist } = request.params
 
-        const bookings = await findInQuoteTable({ Vendor: stylist })
-
-        const transformedBookings = bookings.map(airtableBookingTransformer)
-
-        response.json(transformedBookings)
+        queryQuotesTable(response)({ Vendor: stylist }, airtableBookingTransformer)
     })
     
     queryRouter.get("/gigs/:gigId", async (request, response) => {
         const { gigId } = request.params
 
-        try {
-            const gigs = await findInQuoteTable({ "Row ID": gigId })
-
-            const transformedGigs = gigs.map(stylistAirtableBookingTransformer)
-
-            response.json(transformedGigs)
-        } catch (exception) {
-            response.json(exception)
-        }
+        queryQuotesTable(response)({ "Row ID": gigId }, stylistAirtableBookingTransformer)
     })
 
     return queryRouter
