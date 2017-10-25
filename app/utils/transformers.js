@@ -1,5 +1,17 @@
 const R = require("ramda")
 
+const stylistTransformer = rawAirtableStylist => ({
+    rowId: rawAirtableStylist.RowID,
+    firstName: rawAirtableStylist.FirstName,
+    fullName: rawAirtableStylist["Full Name"],
+    mobileNumber: rawAirtableStylist.Mobile,
+    email: rawAirtableStylist.Email,
+    profileHandler: rawAirtableStylist["Profile Handle"],
+    suburb: rawAirtableStylist.Suburb,
+    state: rawAirtableStylist.State,
+    status: rawAirtableStylist.Status
+})
+
 const stylistAirtableBookingTransformer = rawAirtableBooking => ({
     rowId: rawAirtableBooking["Row ID"],
     suburb: rawAirtableBooking.Suburb,
@@ -25,5 +37,6 @@ const airtableBookingTransformer = rawAirtableBooking =>
 
 module.exports = {
     stylistAirtableBookingTransformer,
-    airtableBookingTransformer
+    airtableBookingTransformer,
+    stylistTransformer
 }

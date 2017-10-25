@@ -3,7 +3,7 @@ const R = require("ramda")
 const { INTERNAL_SERVER_ERROR, NOT_FOUND, BAD_GATEWAY } = require("http-status-codes")
 const { getEnvValue } = require("../utils/configUtils")
 const { getAirtableBase, findItems, saveAirtableItems } = require("../services/airtableService")
-const { airtableBookingTransformer, stylistAirtableBookingTransformer } = require("../utils/transformers")
+const { airtableBookingTransformer, stylistAirtableBookingTransformer, stylistTransformer } = require("../utils/transformers")
 const { connectToDb, find } = require("../services/databaseService")
 const { STYLIST_AIRTABLE_NAME, QUOTE_AIRTABLE_NAME, STYLIST_COLLECTION_NAME } = require("../config")
 const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID, MONGO_URI } = require("../constants/envNames")
@@ -47,7 +47,7 @@ const createQueryRouter = async () =>
             if (stylists.length === 0) {
                 response.status(NOT_FOUND).json({ error: "Stylist NOT found." })
             } else {
-                const stylist = R.head(stylists)
+                const stylist = stylistTransformer(R.head(stylists))
 
                 if (stylists.length > 1) {
                     response.status(BAD_GATEWAY).json(stylist)
