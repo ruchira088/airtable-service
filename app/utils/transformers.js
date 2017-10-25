@@ -7,6 +7,7 @@ const stylistAirtableBookingTransformer = rawAirtableBooking => ({
     eventDate: rawAirtableBooking["Event Date"],
     eventTime: rawAirtableBooking["To be ready by"],
     supplierPayment: Number(rawAirtableBooking.SupplierPayment),
+    leadStatus: rawAirtableBooking["Lead Status"],
     numberOfPeople: Number(rawAirtableBooking["Number of People"])
 })
 
@@ -15,7 +16,6 @@ const airtableBookingTransformer = rawAirtableBooking =>
         {},
         stylistAirtableBookingTransformer(rawAirtableBooking),
         {
-            leadStatus: rawAirtableBooking["Lead Status"],
             mobileNumber: R.head(rawAirtableBooking.Mobile || ["undefined"]),
             firstName: R.head(rawAirtableBooking["First Name"] || ["undefined"]),
             email: rawAirtableBooking["Email (for Zapier)"],
