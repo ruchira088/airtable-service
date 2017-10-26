@@ -3,7 +3,7 @@ const R = require("ramda")
 const { INTERNAL_SERVER_ERROR, NOT_FOUND, BAD_GATEWAY } = require("http-status-codes")
 const { getEnvValue } = require("../utils/configUtils")
 const { getAirtableBase, findItems, saveAirtableItems } = require("../services/airtableService")
-const { airtableBookingTransformer, stylistAirtableBookingTransformer, stylistTransformer } = require("../utils/transformers")
+const { airtableBookingTransformer, stylistTransformer } = require("../utils/transformers")
 const { connectToDb, find } = require("../services/databaseService")
 const { STYLIST_AIRTABLE_NAME, QUOTE_AIRTABLE_NAME, STYLIST_COLLECTION_NAME } = require("../config")
 const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID, MONGO_URI } = require("../constants/envNames")
@@ -60,13 +60,13 @@ const createQueryRouter = async () =>
         }
     })
 
-    const queryQuotesTable = response => async (params, transformer) =>
+    const queryQuotesTable = (response, mapper = items => items) => async params =>
     {
         try {
             const items = await findInQuoteTable(params)
-            const transformedItems = items.map(transformer)
+            const transformedItems = items.map(airtableBookingTransformer)
 
-            response.json(transformedItems)
+            response.json(mapper(transformedItems))
         } catch (exception) {
             response.status(INTERNAL_SERVER_ERROR).json(exception)
         }
@@ -75,13 +75,13 @@ const createQueryRouter = async () =>
     queryRouter.get("/:stylist/bookings", (request, response) => {
         const { stylist } = request.params
 
-        queryQuotesTable(response)({ Vendor: stylist }, airtableBookingTransformer)
+        queryQuotesTable(response)({ Vendor: stylist })
     })
     
     queryRouter.get("/gigs/:gigId", async (request, response) => {
         const { gigId } = request.params
 
-        queryQuotesTable(response)({ "Row ID": gigId }, stylistAirtableBookingTransformer)
+        queryQuotesTable(response, R.head)({ "Row ID": gigId })
     })
 
     return queryRouter

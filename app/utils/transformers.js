@@ -12,7 +12,7 @@ const stylistTransformer = rawAirtableStylist => ({
     status: rawAirtableStylist.Status
 })
 
-const stylistAirtableBookingTransformer = rawAirtableBooking => ({
+const airtableBookingTransformer = rawAirtableBooking => ({
     rowId: rawAirtableBooking["Row ID"],
     suburb: rawAirtableBooking.Suburb,
     state: rawAirtableBooking.State,
@@ -20,23 +20,15 @@ const stylistAirtableBookingTransformer = rawAirtableBooking => ({
     eventTime: rawAirtableBooking["To be ready by"],
     supplierPayment: Number(rawAirtableBooking.SupplierPayment),
     leadStatus: rawAirtableBooking["Lead Status"],
-    numberOfPeople: Number(rawAirtableBooking["Number of People"])
+    numberOfPeople: Number(rawAirtableBooking["Number of People"]),
+    mobileNumber: R.head(rawAirtableBooking.Mobile || ["undefined"]),
+    firstName: R.head(rawAirtableBooking["First Name"] || ["undefined"]),
+    email: rawAirtableBooking["Email (for Zapier)"],
+    cost: Number(rawAirtableBooking.Cost)
 })
 
-const airtableBookingTransformer = rawAirtableBooking =>
-    Object.assign(
-        {},
-        stylistAirtableBookingTransformer(rawAirtableBooking),
-        {
-            mobileNumber: R.head(rawAirtableBooking.Mobile || ["undefined"]),
-            firstName: R.head(rawAirtableBooking["First Name"] || ["undefined"]),
-            email: rawAirtableBooking["Email (for Zapier)"],
-            cost: Number(rawAirtableBooking.Cost)
-        }
-    )
 
 module.exports = {
-    stylistAirtableBookingTransformer,
     airtableBookingTransformer,
     stylistTransformer
 }
